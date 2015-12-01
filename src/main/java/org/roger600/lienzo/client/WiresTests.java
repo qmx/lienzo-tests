@@ -17,7 +17,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import java.util.Map;
 
 public class WiresTests extends FlowPanel {
-    
+
     private Layer layer;
     private IControlHandleList m_ctrls;
 
@@ -119,16 +119,27 @@ public class WiresTests extends FlowPanel {
         final double w = 100;
         final double h = 100;
 
+        // Toolbox shapes
+        MultiPath btn1 = new MultiPath().rect( 0, 0, 20, 20 ).setFillColor( "#c0c000" );
+
         // Blue start event.
         MultiPath startEventMultiPath = new MultiPath().rect(0, 0, w, h).setStrokeColor("#000000");
         WiresShape startEventShape = wires_manager.createShape(startEventMultiPath);
         startEventShape.getGroup().setX(startX).setY(startY).add(new Circle(radius).setX(50).setY(50).setFillColor("#0000CC").setDraggable(true));
         startEventShape.getGroup().setUserData("event");
         addResizeControls(layer, startEventMultiPath);
+        btn1.setX( startEventShape.getGroup().getBoundingBox().getX() );
+        btn1.setY( startEventShape.getGroup().getBoundingBox().getY() );
+        layer.add( btn1 );
+        HoverTimer hoverTimer = new HoverTimer();
+        startEventMultiPath.addNodeMouseEnterHandler( hoverTimer );
+        startEventMultiPath.addNodeMouseExitHandler( hoverTimer );
 
         // Green task node.
         WiresShape taskNodeShape = wires_manager.createShape(new MultiPath().rect(0, 0, w, h).setFillColor("#00CC00"));
         taskNodeShape.getGroup().setX(startX + 200).setY(startY).setUserData("task");
+        taskNodeShape.getGroup().addNodeMouseEnterHandler( hoverTimer );
+        taskNodeShape.getGroup().addNodeMouseExitHandler( hoverTimer );
 
         // Yellow task node.
         WiresShape task2NodeShape = wires_manager.createShape(new MultiPath().rect(0, 0, w, h).setFillColor("#FFEB52"));
@@ -253,6 +264,10 @@ public class WiresTests extends FlowPanel {
 
         private Timer m_timer;
 
+        public HoverTimer(){
+
+        }
+
         @Override
         public void onNodeMouseEnter( final NodeMouseEnterEvent event ) {
             if (m_timer != null)
@@ -260,6 +275,7 @@ public class WiresTests extends FlowPanel {
                 m_timer.cancel();
                 m_timer = null;
             }
+            GWT.log( "enter" );
         }
 
         @Override
@@ -268,6 +284,7 @@ public class WiresTests extends FlowPanel {
             {
                 createHideTimer();
             }
+            GWT.log( "exit" );
         }
 
         public void createHideTimer()
@@ -284,7 +301,7 @@ public class WiresTests extends FlowPanel {
                             m_HandlerRegistrationManager.destroy();
                         }
                         m_HandlerRegistrationManager = null;
-                        
+
                     }
                 };
                 m_timer.schedule(1000);
