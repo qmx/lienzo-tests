@@ -2,10 +2,16 @@ package org.roger600.lienzo.client;
 
 import com.ait.lienzo.client.core.event.NodeMouseClickEvent;
 import com.ait.lienzo.client.core.event.NodeMouseClickHandler;
+import com.ait.lienzo.client.core.event.NodeMouseEnterEvent;
+import com.ait.lienzo.client.core.event.NodeMouseEnterHandler;
+import com.ait.lienzo.client.core.event.NodeMouseExitEvent;
+import com.ait.lienzo.client.core.event.NodeMouseExitHandler;
 import com.ait.lienzo.client.core.shape.*;
 import com.ait.lienzo.client.core.shape.wires.*;
 import com.ait.lienzo.client.core.types.Point2DArray;
+import com.ait.tooling.nativetools.client.event.HandlerRegistrationManager;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.FlowPanel;
 
 import java.util.Map;
@@ -239,5 +245,52 @@ public class WiresTests extends FlowPanel {
     {
         return new OrthogonalPolyLine(Point2DArray.fromArrayOfDouble(points)).setCornerRadius(5).setDraggable(true);
     }
+
+    public static class HoverTimer implements NodeMouseEnterHandler,
+                                              NodeMouseExitHandler {
+
+        private HandlerRegistrationManager m_HandlerRegistrationManager;
+
+        private Timer m_timer;
+
+        @Override
+        public void onNodeMouseEnter( final NodeMouseEnterEvent event ) {
+            if (m_timer != null)
+            {
+                m_timer.cancel();
+                m_timer = null;
+            }
+        }
+
+        @Override
+        public void onNodeMouseExit( final NodeMouseExitEvent event ) {
+            if (m_HandlerRegistrationManager != null)
+            {
+                createHideTimer();
+            }
+        }
+
+        public void createHideTimer()
+        {
+            if (m_timer == null)
+            {
+                m_timer = new Timer()
+                {
+                    @Override
+                    public void run()
+                    {
+                        if (m_HandlerRegistrationManager != null)
+                        {
+                            m_HandlerRegistrationManager.destroy();
+                        }
+                        m_HandlerRegistrationManager = null;
+                        
+                    }
+                };
+                m_timer.schedule(1000);
+            }
+        }
+    }
+
 
 }
