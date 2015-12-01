@@ -11,7 +11,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 public class LienzoTests implements EntryPoint {
 
     private FlowPanel mainPanel = new FlowPanel();
-    private LienzoPanel panel = new LienzoPanel(1200, 900);
+    private LienzoPanel panel = new LienzoPanel(1200, 680);
     private Layer layer = new Layer();
     
     public void onModuleLoad()

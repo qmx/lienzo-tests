@@ -107,8 +107,8 @@ public class WiresTests extends FlowPanel {
             }
         });
 
-        final double startX = 300;
-        final double startY = 300;
+        final double startX = 200;
+        final double startY = 200;
         final double radius = 50;
         final double w = 100;
         final double h = 100;
