@@ -8,12 +8,17 @@ import com.ait.lienzo.client.core.event.NodeMouseExitEvent;
 import com.ait.lienzo.client.core.event.NodeMouseExitHandler;
 import com.ait.lienzo.client.core.shape.*;
 import com.ait.lienzo.client.core.shape.wires.*;
+import com.ait.lienzo.client.core.types.BoundingBox;
+import com.ait.lienzo.client.core.types.Point2D;
 import com.ait.lienzo.client.core.types.Point2DArray;
 import com.ait.tooling.nativetools.client.event.HandlerRegistrationManager;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.FlowPanel;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 public class WiresTests extends FlowPanel {
@@ -25,93 +30,13 @@ public class WiresTests extends FlowPanel {
         this.layer = layer;
     }
 
+    public enum Direction {
+        NE, SE, SW, NW
+    }
+
+
+
     public void testWires() {
-        WiresManager wires_manager = WiresManager.get(layer);
-
-        wires_manager.setConnectionAcceptor(new IConnectionAcceptor() {
-            @Override
-            public boolean acceptHead(WiresConnection head, WiresMagnet magnet) {
-                WiresConnection tail = head.getConnector().getTailConnection();
-
-                WiresMagnet m = tail.getMagnet();
-
-                if (m == null)
-                {
-                    return true;
-                }
-                return accept(magnet.getMagnets().getGroup(), tail.getMagnet().getMagnets().getGroup());
-            }
-
-            @Override
-            public boolean acceptTail(WiresConnection tail, WiresMagnet magnet) {
-                WiresConnection head = tail.getConnector().getHeadConnection();
-
-                WiresMagnet m = head.getMagnet();
-
-                if (m == null)
-                {
-                    return true;
-                }
-                return accept(head.getMagnet().getMagnets().getGroup(), magnet.getMagnets().getGroup());
-            }
-
-            @Override
-            public boolean headConnectionAllowed(WiresConnection head, WiresShape shape) {
-                WiresConnection tail = head.getConnector().getTailConnection();
-                WiresMagnet m = tail.getMagnet();
-
-                if (m == null)
-                {
-                    return true;
-                }
-
-                return accept(shape.getGroup(), tail.getMagnet().getMagnets().getGroup());
-            }
-
-            @Override
-            public boolean tailConnectionAllowed(WiresConnection tail, WiresShape shape) {
-                WiresConnection head = tail.getConnector().getHeadConnection();
-
-                WiresMagnet m = head.getMagnet();
-
-                if (m == null)
-                {
-                    return true;
-                }
-                return accept(head.getMagnet().getMagnets().getGroup(), shape.getGroup());
-            }
-
-            private boolean accept(final Group head, final Group tail)
-            {
-                GWT.log("Accept [head=" + head.getUserData() + "] [tail=" + tail.getUserData() + "]");
-                final String headData = (String) head.getUserData();
-                final String tailData = (String) tail.getUserData();
-                if ( "event".equals(headData) && "event".equals(tailData) )
-                {
-                    return false;
-                }
-                return true;
-            }
-        });
-
-        wires_manager.setContainmentAcceptor(new IContainmentAcceptor()
-        {
-            @Override
-            public boolean containmentAllowed(WiresContainer parent, WiresShape child)
-            {
-                return acceptContainment(parent, child);
-            }
-
-            @Override
-            public boolean acceptContainment(WiresContainer parent, WiresShape child)
-            {
-                if (parent.getParent() == null)
-                {
-                    return true;
-                }
-                return !parent.getContainer().getUserData().equals(child.getGroup().getUserData());
-            }
-        });
 
         final double startX = 200;
         final double startY = 200;
@@ -119,28 +44,77 @@ public class WiresTests extends FlowPanel {
         final double w = 100;
         final double h = 100;
 
-        // Toolbox shapes
-        MultiPath btn1 = new MultiPath().rect( 0, 0, 20, 20 ).setFillColor( "#c0c000" );
+        Map<Direction, Point2D> directions = new HashMap<Direction, Point2D>();
 
         // Blue start event.
-        MultiPath startEventMultiPath = new MultiPath().rect(0, 0, w, h).setFillColor("#000000");
+        MultiPath startEventMultiPath = new MultiPath().rect( 0, 0, w, h ).setFillColor( "#000000" );
         startEventMultiPath.setX( startX );
         startEventMultiPath.setY( startY );
 
-
         HoverTimer hoverTimer = new HoverTimer();
         layer.add( startEventMultiPath );
+        Map<Direction, Point2D> boundingBox = getBoundingBoxAnchors( startEventMultiPath );
 
-        btn1.setX( startEventMultiPath.getBoundingBox().getX() );
-        btn1.setY( startEventMultiPath.getBoundingBox().getY() );
+        for ( Point2D point2D : boundingBox.values() ) {
+            MultiPath button = createButton();
+            button.setX( point2D.getX() );
+            button.setY( point2D.getY() );
+            layer.add( button );
+        }
+
+        GWT.log( boundingBox.toString() );
+
+
+
+        boolean init = false;
+
 
         startEventMultiPath.addNodeMouseEnterHandler( hoverTimer );
         startEventMultiPath.addNodeMouseExitHandler( hoverTimer );
 
-        layer.add( btn1 );
-
     }
 
+    private Map<Direction, Point2D> getBoundingBoxAnchors( final MultiPath startEventMultiPath ) {
+        Map<Direction, Point2D> boundingBox = new HashMap<>();
+        Point2D[] points = startEventMultiPath.getBoundingPoints().getPoints().toArray( new Point2D[]{} );
+        if (points.length == 4) {
+            double max_x = points[0].getX();
+            double max_y = points[0].getY();
+            double min_x = points[0].getX();
+            double min_y = points[0].getY();
+            for ( Point2D point : points ) {
+                if ( point.getX() > max_x ) {
+                    max_x = point.getX();
+                }
+                if ( point.getY() > max_y ) {
+                    max_y = point.getY();
+                }
+                if ( point.getX() < min_x ) {
+                    min_x = point.getX();
+                }
+                if ( point.getY() < min_y ) {
+                    min_y = point.getY();
+                }
+            }
+
+            for ( Point2D point : points ) {
+                if ( point.getX() == min_x && point.getY() == min_y ) {
+                    boundingBox.put( Direction.SW, point );
+                } else if ( point.getX() == max_x && point.getY() == min_y ) {
+                    boundingBox.put( Direction.SE, point );
+                } else if ( point.getX() == max_x && point.getY() == max_x ) {
+                    boundingBox.put( Direction.NE, point );
+                } else if ( point.getX() == min_x && point.getY() == max_x ) {
+                    boundingBox.put( Direction.NW, point );
+                }
+            }
+        }
+        return boundingBox;
+    }
+
+    private MultiPath createButton() {
+        return new MultiPath().rect( 0, 0, 20, 20 ).setFillColor( "#c0c000" );
+    }
 
     public static class HoverTimer implements NodeMouseEnterHandler,
                                               NodeMouseExitHandler {
