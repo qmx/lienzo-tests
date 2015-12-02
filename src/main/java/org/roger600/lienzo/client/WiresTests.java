@@ -123,139 +123,24 @@ public class WiresTests extends FlowPanel {
         MultiPath btn1 = new MultiPath().rect( 0, 0, 20, 20 ).setFillColor( "#c0c000" );
 
         // Blue start event.
-        MultiPath startEventMultiPath = new MultiPath().rect(0, 0, w, h).setStrokeColor("#000000");
-        WiresShape startEventShape = wires_manager.createShape(startEventMultiPath);
-        startEventShape.getGroup().setX(startX).setY(startY).add(new Circle(radius).setX(50).setY(50).setFillColor("#0000CC").setDraggable(true));
-        startEventShape.getGroup().setUserData("event");
-        addResizeControls(layer, startEventMultiPath);
-        btn1.setX( startEventShape.getGroup().getBoundingBox().getX() );
-        btn1.setY( startEventShape.getGroup().getBoundingBox().getY() );
-        layer.add( btn1 );
+        MultiPath startEventMultiPath = new MultiPath().rect(0, 0, w, h).setFillColor("#000000");
+        startEventMultiPath.setX( startX );
+        startEventMultiPath.setY( startY );
+
+
         HoverTimer hoverTimer = new HoverTimer();
+        layer.add( startEventMultiPath );
+
+        btn1.setX( startEventMultiPath.getBoundingBox().getX() );
+        btn1.setY( startEventMultiPath.getBoundingBox().getY() );
+
         startEventMultiPath.addNodeMouseEnterHandler( hoverTimer );
         startEventMultiPath.addNodeMouseExitHandler( hoverTimer );
 
-        // Green task node.
-        WiresShape taskNodeShape = wires_manager.createShape(new MultiPath().rect(0, 0, w, h).setFillColor("#00CC00"));
-        taskNodeShape.getGroup().setX(startX + 200).setY(startY).setUserData("task");
-        taskNodeShape.getGroup().addNodeMouseEnterHandler( hoverTimer );
-        taskNodeShape.getGroup().addNodeMouseExitHandler( hoverTimer );
-
-        // Yellow task node.
-        WiresShape task2NodeShape = wires_manager.createShape(new MultiPath().rect(0, 0, w, h).setFillColor("#FFEB52"));
-        task2NodeShape.getGroup().setX(startX + 200).setY(startY + 300).setUserData("task");
-
-        // Red end event.
-        WiresShape endEventShape = wires_manager.createShape(new MultiPath().rect(0, 0, w, h).setStrokeColor("#FFFFFF"));
-        endEventShape.getGroup().setX(startX + 400).setY(startY).add(new Circle(radius).setX(50).setY(50).setFillColor("#CC0000").setDraggable(true));
-        endEventShape.getGroup().setUserData("event");
-
-        // Create shapes' magnets.
-        wires_manager.createMagnets(startEventShape);
-        wires_manager.createMagnets(taskNodeShape);
-        wires_manager.createMagnets(task2NodeShape);
-        wires_manager.createMagnets(endEventShape);
-
-        // Add shapes into wires layer.
-        WiresLayer wiresLayer = wires_manager.getLayer();
-        wiresLayer.add(startEventShape);
-        wiresLayer.add(taskNodeShape);
-        wiresLayer.add(task2NodeShape);
-        wiresLayer.add(endEventShape);
-
-        // Connector from blue start event to green task node.
-        connect(layer, startEventShape.getMagnets(), 3, taskNodeShape.getMagnets(), 7, wires_manager, true, false);
-        // Connector from green task node to red end event 
-        connect(layer, taskNodeShape.getMagnets(), 3, endEventShape.getMagnets(), 7, wires_manager, true, false);
-        // Connector from blue start event to yellow task node.
-        connect(layer, startEventShape.getMagnets(), 3, task2NodeShape.getMagnets(), 7, wires_manager, true, false);
-
-        wires_manager.addToIndex(startEventShape);
-        wires_manager.addToIndex(taskNodeShape);
-        wires_manager.addToIndex(task2NodeShape);
-        wires_manager.addToIndex(endEventShape);
+        layer.add( btn1 );
 
     }
 
-    private void connect(Layer layer, MagnetManager.Magnets headMagnets, int headMagnetsIndex, MagnetManager.Magnets tailMagnets, int tailMagnetsIndex, WiresManager wires_manager,
-                         final boolean tailArrow, final boolean headArrow)
-    {
-        WiresMagnet m0_1 = headMagnets.getMagnet(headMagnetsIndex);
-
-        WiresMagnet m1_1 = tailMagnets.getMagnet(tailMagnetsIndex);
-
-        double x0 = m0_1.getControl().getX();
-
-        double y0 = m0_1.getControl().getY();
-
-        double x1 = m1_1.getControl().getX();
-
-        double y1 = m1_1.getControl().getY();
-
-        OrthogonalPolyLine line = createLine(x0, y0, (x0 + ((x1 - x0) / 2)), (y0 + ((y1 - y0) / 2)), x1, y1);
-
-        WiresConnector connector = wires_manager.createConnector(m0_1, m1_1, line,
-                headArrow ? new SimpleArrow(20, 0.75) : null,
-                tailArrow ? new SimpleArrow(20, 0.75) : null);
-
-        connector.getDecoratableLine().setStrokeWidth(5).setStrokeColor("#0000CC");
-    }
-
-    private void addResizeControls(final Layer layer, final MultiPath m_multi)
-    {
-        m_multi.addNodeMouseClickHandler(new NodeMouseClickHandler()
-        {
-            @Override
-            public void onNodeMouseClick(NodeMouseClickEvent event)
-            {
-                if (event.isShiftKeyDown())
-                {
-                    if (null != m_ctrls)
-                    {
-                        m_ctrls.destroy();
-
-                        m_ctrls = null;
-                    }
-                    Map<IControlHandle.ControlHandleType, IControlHandleList> hmap = m_multi.getControlHandles(IControlHandle.ControlHandleStandardType.RESIZE);
-
-                    if (null != hmap)
-                    {
-                        m_ctrls = hmap.get(IControlHandle.ControlHandleStandardType.RESIZE);
-
-                        if ((null != m_ctrls) && (m_ctrls.isActive()))
-                        {
-                            m_ctrls.show(layer);
-                        }
-                    }
-                }
-                else if (event.isAltKeyDown())
-                {
-                    if (null != m_ctrls)
-                    {
-                        m_ctrls.destroy();
-
-                        m_ctrls = null;
-                    }
-                    Map<IControlHandle.ControlHandleType, IControlHandleList> hmap = m_multi.getControlHandles(IControlHandle.ControlHandleStandardType.POINT);
-
-                    if (null != hmap)
-                    {
-                        m_ctrls = hmap.get(IControlHandle.ControlHandleStandardType.POINT);
-
-                        if ((null != m_ctrls) && (m_ctrls.isActive()))
-                        {
-                            m_ctrls.show(layer);
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    private final OrthogonalPolyLine createLine(final double... points)
-    {
-        return new OrthogonalPolyLine(Point2DArray.fromArrayOfDouble(points)).setCornerRadius(5).setDraggable(true);
-    }
 
     public static class HoverTimer implements NodeMouseEnterHandler,
                                               NodeMouseExitHandler {
