@@ -141,8 +141,7 @@ public class WiresTests extends FlowPanel {
                 icon.setY(anchor.getY() - (toolboxStack.get(direction) * (iconHeight + 2) * -1));
             }
             toolboxStack.put(direction, toolboxStack.get(direction) + 1);
-            GWT.log(icon.toJSONString());
-            layer.add(icon);
+            this.layer.add(icon);
             return icon;
         }
 
@@ -180,6 +179,7 @@ public class WiresTests extends FlowPanel {
                     }
                 }};
                 toolbox.addAll(createToolbox(this.shape, boundingBox, toolboxStack));
+                this.layer.batch();
             }
         }
 
@@ -205,11 +205,12 @@ public class WiresTests extends FlowPanel {
                             layer.remove(shape);
                         }
                         HoverTimer.this.toolbox.clear();
+                        HoverTimer.this.layer.batch();
                         GWT.log("cleaned up everything");
 
                     }
                 };
-                m_timer.schedule(10000);
+                m_timer.schedule(1000);
             }
         }
     }
