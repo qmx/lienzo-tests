@@ -1,24 +1,20 @@
 package org.roger600.lienzo.client;
 
-import com.ait.lienzo.client.core.event.NodeMouseClickEvent;
-import com.ait.lienzo.client.core.event.NodeMouseClickHandler;
 import com.ait.lienzo.client.core.event.NodeMouseEnterEvent;
 import com.ait.lienzo.client.core.event.NodeMouseEnterHandler;
 import com.ait.lienzo.client.core.event.NodeMouseExitEvent;
 import com.ait.lienzo.client.core.event.NodeMouseExitHandler;
 import com.ait.lienzo.client.core.shape.*;
 import com.ait.lienzo.client.core.shape.wires.*;
-import com.ait.lienzo.client.core.types.BoundingBox;
 import com.ait.lienzo.client.core.types.Point2D;
-import com.ait.lienzo.client.core.types.Point2DArray;
 import com.ait.tooling.nativetools.client.event.HandlerRegistrationManager;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.FlowPanel;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class WiresTests extends FlowPanel {
@@ -47,20 +43,25 @@ public class WiresTests extends FlowPanel {
         Map<Direction, Point2D> directions = new HashMap<Direction, Point2D>();
 
         // Blue start event.
-        MultiPath startEventMultiPath = new MultiPath().rect( 0, 0, w, h ).setFillColor( "#000000" );
-        startEventMultiPath.setX( startX );
-        startEventMultiPath.setY( startY );
+        MultiPath box1 = new MultiPath().rect( 0, 0, w, h ).setFillColor( "#000000" );
+        box1.setX( startX );
+        box1.setY( startY );
+
+        MultiPath box2 = new MultiPath().rect( 0, 0, w, h ).setFillColor( "#000000" );
+        box2.setX( startX * 2 );
+        box2.setY( startY * 2 );
 
         HoverTimer hoverTimer = new HoverTimer();
-        layer.add( startEventMultiPath );
-        Map<Direction, Point2D> boundingBox = getBoundingBoxAnchors( startEventMultiPath );
+        layer.add( box1 );
+        layer.add(box2);
+        Map<Direction, Point2D> boundingBox = getBoundingBoxAnchors( box1 );
+        HashMap<Direction, Integer> toolboxStack = new HashMap<Direction, Integer>(){{
+            for (Direction direction : Direction.values()) {
+                put(direction, 0);
+            }
+        }};
 
-        for ( Point2D point2D : boundingBox.values() ) {
-            MultiPath button = createButton();
-            button.setX( point2D.getX() );
-            button.setY( point2D.getY() );
-            layer.add( button );
-        }
+        List<MultiPath> toolbox = createToolbox(box1, boundingBox, toolboxStack);
 
         GWT.log( boundingBox.toString() );
 
@@ -69,9 +70,45 @@ public class WiresTests extends FlowPanel {
         boolean init = false;
 
 
-        startEventMultiPath.addNodeMouseEnterHandler( hoverTimer );
-        startEventMultiPath.addNodeMouseExitHandler( hoverTimer );
+        box1.addNodeMouseEnterHandler( hoverTimer );
+        box1.addNodeMouseExitHandler( hoverTimer );
 
+    }
+
+    private List<MultiPath> createToolbox(MultiPath startEventMultiPath, Map<Direction, Point2D> boundingBox, HashMap<Direction, Integer> toolboxStack) {
+        ArrayList<MultiPath> icons = new ArrayList<>();
+        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NE, createButton()));
+        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NE, createButton()));
+        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NE, createButton()));
+        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SE, createButton()));
+        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SE, createButton()));
+        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SW, createButton()));
+        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SW, createButton()));
+        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NW, createButton()));
+        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NW, createButton()));
+        return icons;
+    }
+
+    private MultiPath stackIcon(Map<Direction, Integer> toolboxStack, Map<Direction, Point2D> boundingBox, MultiPath shape, Direction direction, MultiPath icon) {
+        Point2D anchor = boundingBox.get(direction);
+        double iconHeight = icon.getBoundingPoints().getBoundingBox().getHeight();
+        double iconWidth = icon.getBoundingPoints().getBoundingBox().getWidth();
+        if (direction.equals(Direction.NE)) {
+            icon.setX(anchor.getX() + 2);
+            icon.setY(anchor.getY() + (toolboxStack.get(direction) * (iconHeight + 2) * -1));
+        } else if (direction.equals(Direction.NW)) {
+            icon.setX(anchor.getX() - 2 - iconWidth);
+            icon.setY(anchor.getY() + (toolboxStack.get(direction) * (iconHeight + 2) * -1));
+        } else if (direction.equals(Direction.SE)) {
+            icon.setX(anchor.getX() + 2);
+            icon.setY(anchor.getY() - (toolboxStack.get(direction) * (iconHeight + 2)));
+        } else if (direction.equals(Direction.SW)) {
+            icon.setX(anchor.getX() - 2 - iconWidth);
+            icon.setY(anchor.getY() - (toolboxStack.get(direction) * (iconHeight + 2) * -1));
+        }
+        toolboxStack.put(direction, toolboxStack.get(direction) + 1);
+        layer.add(icon);
+        return icon;
     }
 
     private Map<Direction, Point2D> getBoundingBoxAnchors( final MultiPath startEventMultiPath ) {
