@@ -7,7 +7,6 @@ import com.ait.lienzo.client.core.event.NodeMouseExitHandler;
 import com.ait.lienzo.client.core.shape.*;
 import com.ait.lienzo.client.core.shape.wires.*;
 import com.ait.lienzo.client.core.types.Point2D;
-import com.ait.tooling.nativetools.client.event.HandlerRegistrationManager;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -51,117 +50,118 @@ public class WiresTests extends FlowPanel {
         box2.setX( startX * 2 );
         box2.setY( startY * 2 );
 
-        HoverTimer hoverTimer = new HoverTimer();
-        layer.add( box1 );
+        layer.add(box1);
         layer.add(box2);
-        Map<Direction, Point2D> boundingBox = getBoundingBoxAnchors( box1 );
-        HashMap<Direction, Integer> toolboxStack = new HashMap<Direction, Integer>(){{
-            for (Direction direction : Direction.values()) {
-                put(direction, 0);
-            }
-        }};
 
-        List<MultiPath> toolbox = createToolbox(box1, boundingBox, toolboxStack);
-
-        GWT.log( boundingBox.toString() );
-
-
+        new HoverTimer(layer, box1);
+        new HoverTimer(layer, box2);
 
         boolean init = false;
-
-
-        box1.addNodeMouseEnterHandler( hoverTimer );
-        box1.addNodeMouseExitHandler( hoverTimer );
-
     }
 
-    private List<MultiPath> createToolbox(MultiPath startEventMultiPath, Map<Direction, Point2D> boundingBox, HashMap<Direction, Integer> toolboxStack) {
-        ArrayList<MultiPath> icons = new ArrayList<>();
-        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NE, createButton()));
-        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NE, createButton()));
-        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NE, createButton()));
-        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SE, createButton()));
-        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SE, createButton()));
-        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SW, createButton()));
-        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SW, createButton()));
-        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NW, createButton()));
-        icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NW, createButton()));
-        return icons;
-    }
 
-    private MultiPath stackIcon(Map<Direction, Integer> toolboxStack, Map<Direction, Point2D> boundingBox, MultiPath shape, Direction direction, MultiPath icon) {
-        Point2D anchor = boundingBox.get(direction);
-        double iconHeight = icon.getBoundingPoints().getBoundingBox().getHeight();
-        double iconWidth = icon.getBoundingPoints().getBoundingBox().getWidth();
-        if (direction.equals(Direction.NE)) {
-            icon.setX(anchor.getX() + 2);
-            icon.setY(anchor.getY() + (toolboxStack.get(direction) * (iconHeight + 2) * -1));
-        } else if (direction.equals(Direction.NW)) {
-            icon.setX(anchor.getX() - 2 - iconWidth);
-            icon.setY(anchor.getY() + (toolboxStack.get(direction) * (iconHeight + 2) * -1));
-        } else if (direction.equals(Direction.SE)) {
-            icon.setX(anchor.getX() + 2);
-            icon.setY(anchor.getY() - (toolboxStack.get(direction) * (iconHeight + 2)));
-        } else if (direction.equals(Direction.SW)) {
-            icon.setX(anchor.getX() - 2 - iconWidth);
-            icon.setY(anchor.getY() - (toolboxStack.get(direction) * (iconHeight + 2) * -1));
-        }
-        toolboxStack.put(direction, toolboxStack.get(direction) + 1);
-        layer.add(icon);
-        return icon;
-    }
 
-    private Map<Direction, Point2D> getBoundingBoxAnchors( final MultiPath startEventMultiPath ) {
-        Map<Direction, Point2D> boundingBox = new HashMap<>();
-        Point2D[] points = startEventMultiPath.getBoundingPoints().getPoints().toArray( new Point2D[]{} );
-        if (points.length == 4) {
-            double max_x = points[0].getX();
-            double max_y = points[0].getY();
-            double min_x = points[0].getX();
-            double min_y = points[0].getY();
-            for ( Point2D point : points ) {
-                if ( point.getX() > max_x ) {
-                    max_x = point.getX();
-                }
-                if ( point.getY() > max_y ) {
-                    max_y = point.getY();
-                }
-                if ( point.getX() < min_x ) {
-                    min_x = point.getX();
-                }
-                if ( point.getY() < min_y ) {
-                    min_y = point.getY();
-                }
-            }
 
-            for ( Point2D point : points ) {
-                if ( point.getX() == min_x && point.getY() == min_y ) {
-                    boundingBox.put( Direction.SW, point );
-                } else if ( point.getX() == max_x && point.getY() == min_y ) {
-                    boundingBox.put( Direction.SE, point );
-                } else if ( point.getX() == max_x && point.getY() == max_x ) {
-                    boundingBox.put( Direction.NE, point );
-                } else if ( point.getX() == min_x && point.getY() == max_x ) {
-                    boundingBox.put( Direction.NW, point );
-                }
-            }
-        }
-        return boundingBox;
-    }
 
-    private MultiPath createButton() {
-        return new MultiPath().rect( 0, 0, 20, 20 ).setFillColor( "#c0c000" );
-    }
+
+
+
 
     public static class HoverTimer implements NodeMouseEnterHandler,
                                               NodeMouseExitHandler {
 
-        private HandlerRegistrationManager m_HandlerRegistrationManager;
+
+        private final Layer layer;
+        private final MultiPath shape;
+        private List<MultiPath> toolbox = new ArrayList<>();
+
 
         private Timer m_timer;
 
-        public HoverTimer(){
+        public HoverTimer(Layer layer, MultiPath shape){
+            this.layer = layer;
+            this.shape = shape;
+            this.shape.addNodeMouseEnterHandler(this);
+            this.shape.addNodeMouseExitHandler(this);
+        }
 
+        private Map<Direction, Point2D> getBoundingBoxAnchors( final MultiPath startEventMultiPath ) {
+            Map<Direction, Point2D> boundingBox = new HashMap<>();
+            Point2D[] points = startEventMultiPath.getBoundingPoints().getPoints().toArray( new Point2D[]{} );
+            if (points.length == 4) {
+                double max_x = points[0].getX();
+                double max_y = points[0].getY();
+                double min_x = points[0].getX();
+                double min_y = points[0].getY();
+                for ( Point2D point : points ) {
+                    if ( point.getX() > max_x ) {
+                        max_x = point.getX();
+                    }
+                    if ( point.getY() > max_y ) {
+                        max_y = point.getY();
+                    }
+                    if ( point.getX() < min_x ) {
+                        min_x = point.getX();
+                    }
+                    if ( point.getY() < min_y ) {
+                        min_y = point.getY();
+                    }
+                }
+
+                for ( Point2D point : points ) {
+                    if ( point.getX() == min_x && point.getY() == min_y ) {
+                        boundingBox.put( Direction.SW, point );
+                    } else if ( point.getX() == max_x && point.getY() == min_y ) {
+                        boundingBox.put( Direction.SE, point );
+                    } else if ( point.getX() == max_x && point.getY() == max_x ) {
+                        boundingBox.put( Direction.NE, point );
+                    } else if ( point.getX() == min_x && point.getY() == max_x ) {
+                        boundingBox.put( Direction.NW, point );
+                    }
+                }
+            }
+            return boundingBox;
+        }
+
+        private MultiPath stackIcon(Map<Direction, Integer> toolboxStack, Map<Direction, Point2D> boundingBox, MultiPath shape, Direction direction, MultiPath icon) {
+            Point2D anchor = boundingBox.get(direction);
+            double iconHeight = icon.getBoundingPoints().getBoundingBox().getHeight();
+            double iconWidth = icon.getBoundingPoints().getBoundingBox().getWidth();
+            if (direction.equals(Direction.NE)) {
+                icon.setX(anchor.getX() + 2);
+                icon.setY(anchor.getY() + (toolboxStack.get(direction) * (iconHeight + 2) * -1));
+            } else if (direction.equals(Direction.NW)) {
+                icon.setX(anchor.getX() - 2 - iconWidth);
+                icon.setY(anchor.getY() + (toolboxStack.get(direction) * (iconHeight + 2) * -1));
+            } else if (direction.equals(Direction.SE)) {
+                icon.setX(anchor.getX() + 2);
+                icon.setY(anchor.getY() - (toolboxStack.get(direction) * (iconHeight + 2)));
+            } else if (direction.equals(Direction.SW)) {
+                icon.setX(anchor.getX() - 2 - iconWidth);
+                icon.setY(anchor.getY() - (toolboxStack.get(direction) * (iconHeight + 2) * -1));
+            }
+            toolboxStack.put(direction, toolboxStack.get(direction) + 1);
+            GWT.log(icon.toJSONString());
+            layer.add(icon);
+            return icon;
+        }
+
+        private List<MultiPath> createToolbox(MultiPath startEventMultiPath, Map<Direction, Point2D> boundingBox, HashMap<Direction, Integer> toolboxStack) {
+            ArrayList<MultiPath> icons = new ArrayList<>();
+            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NE, createButton()));
+            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NE, createButton()));
+            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NE, createButton()));
+            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SE, createButton()));
+            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SE, createButton()));
+            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SW, createButton()));
+            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SW, createButton()));
+            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NW, createButton()));
+            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NW, createButton()));
+            return icons;
+        }
+
+        private MultiPath createButton() {
+            return new MultiPath().rect( 0, 0, 20, 20 ).setFillColor( "#c0c000" );
         }
 
         @Override
@@ -171,12 +171,21 @@ public class WiresTests extends FlowPanel {
                 m_timer.cancel();
                 m_timer = null;
             }
-            GWT.log( "enter" );
+            if (toolbox.isEmpty()) {
+                GWT.log("creating shit");
+                Map<Direction, Point2D> boundingBox = getBoundingBoxAnchors( this.shape );
+                HashMap<Direction, Integer> toolboxStack = new HashMap<Direction, Integer>(){{
+                    for (Direction direction : Direction.values()) {
+                        put(direction, 0);
+                    }
+                }};
+                toolbox.addAll(createToolbox(this.shape, boundingBox, toolboxStack));
+            }
         }
 
         @Override
         public void onNodeMouseExit( final NodeMouseExitEvent event ) {
-            if (m_HandlerRegistrationManager != null)
+            if (!this.toolbox.isEmpty())
             {
                 createHideTimer();
             }
@@ -192,15 +201,15 @@ public class WiresTests extends FlowPanel {
                     @Override
                     public void run()
                     {
-                        if (m_HandlerRegistrationManager != null)
-                        {
-                            m_HandlerRegistrationManager.destroy();
+                        for (MultiPath shape: HoverTimer.this.toolbox) {
+                            layer.remove(shape);
                         }
-                        m_HandlerRegistrationManager = null;
+                        HoverTimer.this.toolbox.clear();
+                        GWT.log("cleaned up everything");
 
                     }
                 };
-                m_timer.schedule(1000);
+                m_timer.schedule(10000);
             }
         }
     }
