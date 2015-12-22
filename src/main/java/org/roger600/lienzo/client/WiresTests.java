@@ -142,6 +142,8 @@ public class WiresTests extends FlowPanel {
             }
             toolboxStack.put(direction, toolboxStack.get(direction) + 1);
             this.layer.add(icon);
+            icon.addNodeMouseEnterHandler(this);
+            icon.addNodeMouseExitHandler(this);
             return icon;
         }
 
