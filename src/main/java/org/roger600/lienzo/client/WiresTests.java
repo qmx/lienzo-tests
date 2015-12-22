@@ -1,5 +1,9 @@
 package org.roger600.lienzo.client;
 
+import com.ait.lienzo.client.core.animation.AnimationCallback;
+import com.ait.lienzo.client.core.animation.AnimationProperties;
+import com.ait.lienzo.client.core.animation.AnimationProperty;
+import com.ait.lienzo.client.core.animation.AnimationTweener;
 import com.ait.lienzo.client.core.event.NodeMouseEnterEvent;
 import com.ait.lienzo.client.core.event.NodeMouseEnterHandler;
 import com.ait.lienzo.client.core.event.NodeMouseExitEvent;
@@ -144,6 +148,8 @@ public class WiresTests extends FlowPanel {
             this.layer.add(icon);
             icon.addNodeMouseEnterHandler(this);
             icon.addNodeMouseExitHandler(this);
+            icon.animate(AnimationTweener.LINEAR, AnimationProperties.toPropertyList(AnimationProperty.Properties.ALPHA(1)), 500, new AnimationCallback());
+            this.layer.batch();
             return icon;
         }
 
@@ -159,7 +165,8 @@ public class WiresTests extends FlowPanel {
         }
 
         private MultiPath createButton() {
-            return new MultiPath().rect( 0, 0, 20, 20 ).setFillColor( "#c0c000" );
+            MultiPath path = new MultiPath().rect(0, 0, 20, 20).setFillColor("#c0c000").setAlpha(0);
+            return path;
         }
 
         @Override
