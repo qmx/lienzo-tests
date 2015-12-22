@@ -145,17 +145,14 @@ public class WiresTests extends FlowPanel {
             return icon;
         }
 
-        private List<MultiPath> createToolbox(MultiPath startEventMultiPath, Map<Direction, Point2D> boundingBox, HashMap<Direction, Integer> toolboxStack) {
+        private List<MultiPath> createToolbox(MultiPath targetShape, Map<Direction, Point2D> boundingBox, HashMap<Direction, Integer> toolboxStack) {
             ArrayList<MultiPath> icons = new ArrayList<>();
-            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NE, createButton()));
-            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NE, createButton()));
-            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NE, createButton()));
-            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SE, createButton()));
-            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SE, createButton()));
-            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SW, createButton()));
-            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.SW, createButton()));
-            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NW, createButton()));
-            icons.add(stackIcon(toolboxStack, boundingBox, startEventMultiPath, Direction.NW, createButton()));
+            icons.add(stackIcon(toolboxStack, boundingBox, targetShape, Direction.NE, createButton()));
+            icons.add(stackIcon(toolboxStack, boundingBox, targetShape, Direction.NE, createButton()));
+            icons.add(stackIcon(toolboxStack, boundingBox, targetShape, Direction.NE, createButton()));
+            icons.add(stackIcon(toolboxStack, boundingBox, targetShape, Direction.SE, createButton()));
+            icons.add(stackIcon(toolboxStack, boundingBox, targetShape, Direction.SE, createButton()));
+            icons.add(stackIcon(toolboxStack, boundingBox, targetShape, Direction.SE, createButton()));
             return icons;
         }
 
