@@ -87,7 +87,6 @@ public class WiresTests extends FlowPanel {
 
         private MultiPath stackIcon(Map<Direction, Integer> toolboxStack, Direction direction, MultiPath icon) {
             Point2D anchor = anchorFor(direction);
-            GWT.log(anchor.toJSONString());
             double iconHeight = icon.getBoundingPoints().getBoundingBox().getHeight();
             double iconWidth = icon.getBoundingPoints().getBoundingBox().getWidth();
 
@@ -161,7 +160,6 @@ public class WiresTests extends FlowPanel {
                 m_timer = null;
             }
             if (toolbox.isEmpty()) {
-                Point2DArray cardinals = Geometry.getCardinals(this.shape.getBoundingBox());
                 HashMap<Direction, Integer> toolboxStack = new HashMap<Direction, Integer>() {{
                     for (Direction direction : Direction.values()) {
                         put(direction, 0);
