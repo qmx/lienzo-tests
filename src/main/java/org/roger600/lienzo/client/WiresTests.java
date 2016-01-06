@@ -11,6 +11,9 @@ import com.ait.lienzo.client.core.event.NodeMouseExitHandler;
 import com.ait.lienzo.client.core.shape.*;
 import com.ait.lienzo.client.core.shape.wires.*;
 import com.ait.lienzo.client.core.types.Point2D;
+import com.ait.lienzo.client.core.types.Point2DArray;
+import com.ait.lienzo.client.core.util.Geometry;
+import com.ait.lienzo.shared.core.types.Direction;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -29,11 +32,6 @@ public class WiresTests extends FlowPanel {
         this.layer = layer;
     }
 
-    public enum Direction {
-        NE, SE, SW, NW
-    }
-
-
 
     public void testWires() {
 
@@ -42,8 +40,6 @@ public class WiresTests extends FlowPanel {
         final double radius = 50;
         final double w = 100;
         final double h = 100;
-
-        Map<Direction, Point2D> directions = new HashMap<Direction, Point2D>();
 
         // Blue start event.
         MultiPath box1 = new MultiPath().rect( 0, 0, w, h ).setFillColor( "#000000" );
@@ -89,60 +85,24 @@ public class WiresTests extends FlowPanel {
             this.shape.addNodeMouseExitHandler(this);
         }
 
-        private Map<Direction, Point2D> getBoundingBoxAnchors( final MultiPath startEventMultiPath ) {
-            Map<Direction, Point2D> boundingBox = new HashMap<>();
-            Point2D[] points = startEventMultiPath.getBoundingPoints().getPoints().toArray( new Point2D[]{} );
-            if (points.length == 4) {
-                double max_x = points[0].getX();
-                double max_y = points[0].getY();
-                double min_x = points[0].getX();
-                double min_y = points[0].getY();
-                for ( Point2D point : points ) {
-                    if ( point.getX() > max_x ) {
-                        max_x = point.getX();
-                    }
-                    if ( point.getY() > max_y ) {
-                        max_y = point.getY();
-                    }
-                    if ( point.getX() < min_x ) {
-                        min_x = point.getX();
-                    }
-                    if ( point.getY() < min_y ) {
-                        min_y = point.getY();
-                    }
-                }
-
-                for ( Point2D point : points ) {
-                    if ( point.getX() == min_x && point.getY() == min_y ) {
-                        boundingBox.put( Direction.SW, point );
-                    } else if ( point.getX() == max_x && point.getY() == min_y ) {
-                        boundingBox.put( Direction.SE, point );
-                    } else if ( point.getX() == max_x && point.getY() == max_x ) {
-                        boundingBox.put( Direction.NE, point );
-                    } else if ( point.getX() == min_x && point.getY() == max_x ) {
-                        boundingBox.put( Direction.NW, point );
-                    }
-                }
-            }
-            return boundingBox;
-        }
-
-        private MultiPath stackIcon(Map<Direction, Integer> toolboxStack, Map<Direction, Point2D> boundingBox, MultiPath shape, Direction direction, MultiPath icon) {
-            Point2D anchor = boundingBox.get(direction);
+        private MultiPath stackIcon(Map<Direction, Integer> toolboxStack, Direction direction, MultiPath icon) {
+            Point2D anchor = anchorFor(direction);
+            GWT.log(anchor.toJSONString());
             double iconHeight = icon.getBoundingPoints().getBoundingBox().getHeight();
             double iconWidth = icon.getBoundingPoints().getBoundingBox().getWidth();
-            if (direction.equals(Direction.NE)) {
+
+            if (direction.equals(Direction.NORTH_EAST)) {
                 icon.setX(anchor.getX() + 2);
-                icon.setY(anchor.getY() + (toolboxStack.get(direction) * (iconHeight + 2) * -1));
-            } else if (direction.equals(Direction.NW)) {
+                icon.setY(anchor.getY() + (toolboxStack.get(direction) * (iconHeight + 2)));
+            } else if (direction.equals(Direction.NORTH_WEST)) {
                 icon.setX(anchor.getX() - 2 - iconWidth);
-                icon.setY(anchor.getY() + (toolboxStack.get(direction) * (iconHeight + 2) * -1));
-            } else if (direction.equals(Direction.SE)) {
+                icon.setY(anchor.getY() + (toolboxStack.get(direction) * (iconHeight + 2)));
+            } else if (direction.equals(Direction.SOUTH_EAST)) {
                 icon.setX(anchor.getX() + 2);
-                icon.setY(anchor.getY() - (toolboxStack.get(direction) * (iconHeight + 2)));
-            } else if (direction.equals(Direction.SW)) {
+                icon.setY(anchor.getY() - (toolboxStack.get(direction) * (iconHeight + 2)) - (iconHeight));
+            } else if (direction.equals(Direction.SOUTH_WEST)) {
                 icon.setX(anchor.getX() - 2 - iconWidth);
-                icon.setY(anchor.getY() - (toolboxStack.get(direction) * (iconHeight + 2) * -1));
+                icon.setY(anchor.getY() - (toolboxStack.get(direction) * (iconHeight + 2)) - (iconHeight));
             }
             toolboxStack.put(direction, toolboxStack.get(direction) + 1);
             this.layer.add(icon);
@@ -153,14 +113,38 @@ public class WiresTests extends FlowPanel {
             return icon;
         }
 
-        private List<MultiPath> createToolbox(MultiPath targetShape, Map<Direction, Point2D> boundingBox, HashMap<Direction, Integer> toolboxStack) {
+        private Point2D anchorFor(Direction direction) {
+            Point2DArray cardinals = Geometry.getCardinals(this.shape.getBoundingPoints().getBoundingBox());
+            Point2D anchor = null;
+            switch (direction) {
+                case NORTH_EAST:
+                    anchor = cardinals.get(2);
+                    break;
+                case SOUTH_EAST:
+                    anchor = cardinals.get(4);
+                    break;
+                case SOUTH_WEST:
+                    anchor = cardinals.get(6);
+                    break;
+                case NORTH_WEST:
+                    anchor = cardinals.get(8);
+                    break;
+                default:
+                    throw new RuntimeException("meh");
+            }
+            return anchor;
+        }
+
+        private List<MultiPath> createToolbox(HashMap<Direction, Integer> toolboxStack) {
             ArrayList<MultiPath> icons = new ArrayList<>();
-            icons.add(stackIcon(toolboxStack, boundingBox, targetShape, Direction.NE, createButton()));
-            icons.add(stackIcon(toolboxStack, boundingBox, targetShape, Direction.NE, createButton()));
-            icons.add(stackIcon(toolboxStack, boundingBox, targetShape, Direction.NE, createButton()));
-            icons.add(stackIcon(toolboxStack, boundingBox, targetShape, Direction.SE, createButton()));
-            icons.add(stackIcon(toolboxStack, boundingBox, targetShape, Direction.SE, createButton()));
-            icons.add(stackIcon(toolboxStack, boundingBox, targetShape, Direction.SE, createButton()));
+            icons.add(stackIcon(toolboxStack, Direction.NORTH_EAST, createButton()));
+            icons.add(stackIcon(toolboxStack, Direction.NORTH_EAST, createButton()));
+            icons.add(stackIcon(toolboxStack, Direction.NORTH_WEST, createButton()));
+            icons.add(stackIcon(toolboxStack, Direction.NORTH_WEST, createButton()));
+            icons.add(stackIcon(toolboxStack, Direction.SOUTH_EAST, createButton()));
+            icons.add(stackIcon(toolboxStack, Direction.SOUTH_EAST, createButton()));
+            icons.add(stackIcon(toolboxStack, Direction.SOUTH_WEST, createButton()));
+            icons.add(stackIcon(toolboxStack, Direction.SOUTH_WEST, createButton()));
             return icons;
         }
 
@@ -177,14 +161,13 @@ public class WiresTests extends FlowPanel {
                 m_timer = null;
             }
             if (toolbox.isEmpty()) {
-                GWT.log("creating shit");
-                Map<Direction, Point2D> boundingBox = getBoundingBoxAnchors( this.shape );
-                HashMap<Direction, Integer> toolboxStack = new HashMap<Direction, Integer>(){{
+                Point2DArray cardinals = Geometry.getCardinals(this.shape.getBoundingBox());
+                HashMap<Direction, Integer> toolboxStack = new HashMap<Direction, Integer>() {{
                     for (Direction direction : Direction.values()) {
                         put(direction, 0);
                     }
                 }};
-                toolbox.addAll(createToolbox(this.shape, boundingBox, toolboxStack));
+                toolbox.addAll(createToolbox(toolboxStack));
                 this.layer.batch();
             }
         }
@@ -195,7 +178,6 @@ public class WiresTests extends FlowPanel {
             {
                 createHideTimer();
             }
-            GWT.log( "exit" );
         }
 
         public void createHideTimer()
@@ -208,11 +190,11 @@ public class WiresTests extends FlowPanel {
                     public void run()
                     {
                         for (MultiPath shape: HoverTimer.this.toolbox) {
+
                             layer.remove(shape);
                         }
                         HoverTimer.this.toolbox.clear();
                         HoverTimer.this.layer.batch();
-                        GWT.log("cleaned up everything");
 
                     }
                 };
