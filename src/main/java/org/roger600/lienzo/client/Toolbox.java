@@ -1,5 +1,7 @@
 package org.roger600.lienzo.client;
 
+import com.ait.lienzo.client.core.event.NodeMouseEnterEvent;
+import com.ait.lienzo.client.core.event.NodeMouseExitEvent;
 import com.ait.lienzo.client.core.shape.Layer;
 import com.ait.lienzo.client.core.shape.MultiPath;
 import com.ait.lienzo.client.core.types.Point2D;
@@ -120,4 +122,7 @@ public class Toolbox {
         showing = false;
     }
 
+    public HoverTimer getHoverTimer() {
+        return hoverTimer;
+    }
 }

@@ -15,6 +15,7 @@ public class ToolboxButton {
     private final Toolbox toolbox;
     private final String icon;
     private final ToolboxButtonClickHandler toolboxButtonClickHandler;
+    private final HoverTimer parentHoverTimer;
     private final Point2D position;
     private Picture picture;
 
@@ -22,6 +23,7 @@ public class ToolboxButton {
         this.toolbox = toolbox;
         this.icon = icon;
         this.toolboxButtonClickHandler = toolboxButtonClickHandler;
+        this.parentHoverTimer = toolbox.getHoverTimer();
         position = toolbox.addButton(ToolboxButton.this);
     }
 
@@ -39,6 +41,8 @@ public class ToolboxButton {
                             toolboxButtonClickHandler.onClick(ToolboxButton.this, event);
                         }
                     });
+                    picture.addNodeMouseEnterHandler(parentHoverTimer);
+                    picture.addNodeMouseExitHandler(parentHoverTimer);
                     toolbox.getLayer().add(picture);
                     toolbox.getLayer().batch();
                 }

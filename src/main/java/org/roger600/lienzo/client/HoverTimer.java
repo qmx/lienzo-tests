@@ -5,7 +5,6 @@ import com.ait.lienzo.client.core.event.NodeMouseEnterEvent;
 import com.ait.lienzo.client.core.event.NodeMouseEnterHandler;
 import com.ait.lienzo.client.core.event.NodeMouseExitEvent;
 import com.ait.lienzo.client.core.event.NodeMouseExitHandler;
-import com.ait.lienzo.client.core.shape.MultiPath;
 import com.google.gwt.user.client.Timer;
 
 public class HoverTimer implements NodeMouseEnterHandler, NodeMouseExitHandler {
@@ -28,11 +27,15 @@ public class HoverTimer implements NodeMouseEnterHandler, NodeMouseExitHandler {
 
     @Override
     public void onNodeMouseEnter(NodeMouseEnterEvent event) {
+        cancel();
+        actions.onMouseEnter();
+    }
+
+    private void cancel() {
         if (m_timer != null) {
             m_timer.cancel();
             m_timer = null;
         }
-        actions.onMouseEnter();
     }
 
     @Override
