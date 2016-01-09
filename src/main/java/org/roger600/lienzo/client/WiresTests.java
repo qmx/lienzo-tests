@@ -4,10 +4,8 @@ import com.ait.lienzo.client.core.animation.AnimationCallback;
 import com.ait.lienzo.client.core.animation.AnimationProperties;
 import com.ait.lienzo.client.core.animation.AnimationProperty;
 import com.ait.lienzo.client.core.animation.AnimationTweener;
-import com.ait.lienzo.client.core.event.NodeMouseEnterEvent;
-import com.ait.lienzo.client.core.event.NodeMouseEnterHandler;
-import com.ait.lienzo.client.core.event.NodeMouseExitEvent;
-import com.ait.lienzo.client.core.event.NodeMouseExitHandler;
+import com.ait.lienzo.client.core.event.*;
+import com.ait.lienzo.client.core.image.PictureLoadedHandler;
 import com.ait.lienzo.client.core.shape.*;
 import com.ait.lienzo.client.core.shape.wires.*;
 import com.ait.lienzo.client.core.types.Point2D;
@@ -50,26 +48,48 @@ public class WiresTests extends FlowPanel {
         box2.setX( startX * 2 );
         box2.setY( startY * 2 );
 
-        layer.add(box1);
         layer.add(box2);
 
-        new HoverTimer(layer, box1);
-        new HoverTimer(layer, box2);
+        Toolbox toolbox = new Toolbox(box2, Direction.SOUTH_EAST);
+        new ToolboxButton(toolbox, "icons/activity/task.png", new ToolboxButtonClickHandler() {
+            @Override
+            public void onClick(ToolboxButton button, NodeMouseClickEvent event) {
+                GWT.log("task clicked");
+            }
+        });
+        new ToolboxButton(toolbox, "icons/activity/subprocess.png", new ToolboxButtonClickHandler() {
+            @Override
+            public void onClick(ToolboxButton button, NodeMouseClickEvent event) {
+                GWT.log("subprocess clicked");
+            }
+        });
+        new ToolboxButton(toolbox, "icons/connector/messageflow.png", new ToolboxButtonClickHandler() {
+            @Override
+            public void onClick(ToolboxButton button, NodeMouseClickEvent event) {
+                GWT.log("messageflow clicked");
+            }
+        });
 
+
+//        toolbox.addIcon(new Polygon(82.863,257.986 0,175.122 10.606,164.516 82.863,236.773 283.509,36.128 294.115,46.734))
+//        Group icon = new Group();
+//        SVGPath outline = new SVGPath("M95.915,45.957L0,160.387l95.915,114.43h224.858V45.957H95.915z M305.773,259.816H102.914l-83.342-99.43l83.342-99.43 h202.859V259.816z");
+//        outline.setStrokeWidth(4);
+//        outline.setStrokeColor("#000000");
+//        outline.setFillColor("#000000");
+//        icon.add(outline);
+//        SVGPath x = new SVGPath("m 243.22,213.038 c 3.53567,-3.53567 7.07133,-7.07133 10.607,-10.607 -14.015,-14.01467 -28.03,-28.02933 -42.045,-42.044 14.015,-14.01467 28.03,-28.02933 42.045,-42.044 -3.53567,-3.536 -7.07133,-7.072 -10.607,-10.608 -14.015,14.015 -28.03,28.03 -42.045,42.045 -14.015,-14.015 -28.03,-28.03 -42.045,-42.045 -3.53533,3.536 -7.07067,7.072 -10.606,10.608 14.01467,14.01467 28.02933,28.02933 42.044,42.044 -14.01467,14.01467 -28.02933,28.02933 -42.044,42.044 3.53533,3.53567 7.07067,7.07133 10.606,10.607 14.015,-14.01467 28.03,-28.02933 42.045,-42.044 14.015,14.01467 28.03,28.02933 42.045,42.044 z");
+//        x.setStrokeWidth(4);
+//        x.setStrokeColor("#000000");
+//        x.setFillColor("#000000");
+//        icon.add(x);
+//        x.setScale()
+//        layer.add(icon);
         boolean init = false;
     }
 
-
-
-
-
-
-
-
-
     public static class HoverTimer implements NodeMouseEnterHandler,
                                               NodeMouseExitHandler {
-
 
         private final Layer layer;
         private final MultiPath shape;
