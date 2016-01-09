@@ -17,15 +17,34 @@ public class Toolbox {
     private final MultiPath owner;
     private final Direction direction;
     private List<ToolboxButton> buttons = new ArrayList<>();
+    private final HoverTimer hoverTimer = new HoverTimer(new HoverTimer.Actions() {
+        @Override
+        public void onMouseEnter() {
+            Toolbox.this.show();
+        }
+
+        @Override
+        public void onMouseExit() {
+            Toolbox.this.hide();
+        }
+
+        @Override
+        public boolean isReadyToHide() {
+            return Toolbox.this.showing;
+        }
+    });
     private final Map<Direction, Integer> stack = new HashMap<Direction, Integer>() {{
         for (Direction direction : Direction.values()) {
             put(direction, 0);
         }
     }};
+    private boolean showing = false;
 
     public Toolbox(MultiPath owner, Direction direction) {
         this.owner = owner;
         this.direction = direction;
+        this.owner.addNodeMouseEnterHandler(hoverTimer);
+        this.owner.addNodeMouseExitHandler(hoverTimer);
     }
 
     public Point2D addButton(ToolboxButton toolboxButton) {
@@ -91,6 +110,14 @@ public class Toolbox {
         for (ToolboxButton button : buttons) {
             button.show();
         }
+        showing = true;
+    }
+
+    public void hide() {
+        for (ToolboxButton button : buttons) {
+            button.hide();
+        }
+        showing = false;
     }
 
 }

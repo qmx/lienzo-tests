@@ -16,6 +16,7 @@ public class ToolboxButton {
     private final String icon;
     private final ToolboxButtonClickHandler toolboxButtonClickHandler;
     private final Point2D position;
+    private Picture picture;
 
     public ToolboxButton(final Toolbox toolbox, String icon, final ToolboxButtonClickHandler toolboxButtonClickHandler) {
         this.toolbox = toolbox;
@@ -25,20 +26,31 @@ public class ToolboxButton {
     }
 
     public void show() {
-        new Picture(icon).onLoaded(new PictureLoadedHandler() {
-            @Override
-            public void onPictureLoaded(Picture picture) {
-                picture.setX(position.getX());
-                picture.setY(position.getY());
-                picture.animate(AnimationTweener.LINEAR, AnimationProperties.toPropertyList(AnimationProperty.Properties.ALPHA(1)), 500, new AnimationCallback());
-                picture.addNodeMouseClickHandler(new NodeMouseClickHandler() {
-                    @Override
-                    public void onNodeMouseClick(NodeMouseClickEvent event) {
-                        toolboxButtonClickHandler.onClick(ToolboxButton.this, event);
-                    }
-                });
-                toolbox.getLayer().add(picture);
-            }
-        });
+        if (this.picture == null) {
+            this.picture = new Picture(icon).onLoaded(new PictureLoadedHandler() {
+                @Override
+                public void onPictureLoaded(Picture picture) {
+                    picture.setX(position.getX());
+                    picture.setY(position.getY());
+                    picture.animate(AnimationTweener.LINEAR, AnimationProperties.toPropertyList(AnimationProperty.Properties.ALPHA(1)), 500, new AnimationCallback());
+                    picture.addNodeMouseClickHandler(new NodeMouseClickHandler() {
+                        @Override
+                        public void onNodeMouseClick(NodeMouseClickEvent event) {
+                            toolboxButtonClickHandler.onClick(ToolboxButton.this, event);
+                        }
+                    });
+                    toolbox.getLayer().add(picture);
+                    toolbox.getLayer().batch();
+                }
+            });
+        }
+    }
+
+    public void hide() {
+        if (this.picture != null) {
+            picture.removeFromParent();
+            toolbox.getLayer().batch();
+            this.picture = null;
+        }
     }
 }
