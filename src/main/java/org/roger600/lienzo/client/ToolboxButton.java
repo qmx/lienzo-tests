@@ -15,15 +15,19 @@ public class ToolboxButton {
     private final Toolbox toolbox;
     private final String icon;
     private final ToolboxButtonClickHandler toolboxButtonClickHandler;
+    private final Point2D position;
 
     public ToolboxButton(final Toolbox toolbox, String icon, final ToolboxButtonClickHandler toolboxButtonClickHandler) {
         this.toolbox = toolbox;
         this.icon = icon;
         this.toolboxButtonClickHandler = toolboxButtonClickHandler;
+        position = toolbox.addButton(ToolboxButton.this);
+    }
+
+    public void show() {
         new Picture(icon).onLoaded(new PictureLoadedHandler() {
             @Override
             public void onPictureLoaded(Picture picture) {
-                Point2D position = toolbox.addButton(ToolboxButton.this);
                 picture.setX(position.getX());
                 picture.setY(position.getY());
                 picture.animate(AnimationTweener.LINEAR, AnimationProperties.toPropertyList(AnimationProperty.Properties.ALPHA(1)), 500, new AnimationCallback());
@@ -36,6 +40,5 @@ public class ToolboxButton {
                 toolbox.getLayer().add(picture);
             }
         });
-
     }
 }

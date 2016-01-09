@@ -7,13 +7,16 @@ import com.ait.lienzo.client.core.types.Point2DArray;
 import com.ait.lienzo.client.core.util.Geometry;
 import com.ait.lienzo.shared.core.types.Direction;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Toolbox {
 
     private final MultiPath owner;
     private final Direction direction;
+    private List<ToolboxButton> buttons = new ArrayList<>();
     private final Map<Direction, Integer> stack = new HashMap<Direction, Integer>() {{
         for (Direction direction : Direction.values()) {
             put(direction, 0);
@@ -23,10 +26,10 @@ public class Toolbox {
     public Toolbox(MultiPath owner, Direction direction) {
         this.owner = owner;
         this.direction = direction;
-
     }
 
     public Point2D addButton(ToolboxButton toolboxButton) {
+        this.buttons.add(toolboxButton);
         return getNextStackedButtonPosition();
     }
 
@@ -82,6 +85,12 @@ public class Toolbox {
 
     public Layer getLayer() {
         return this.owner.getLayer();
+    }
+
+    public void show() {
+        for (ToolboxButton button : buttons) {
+            button.show();
+        }
     }
 
 }
