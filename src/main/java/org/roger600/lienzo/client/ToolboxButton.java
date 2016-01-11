@@ -4,6 +4,8 @@ import com.ait.lienzo.client.core.animation.AnimationCallback;
 import com.ait.lienzo.client.core.animation.AnimationProperties;
 import com.ait.lienzo.client.core.animation.AnimationProperty;
 import com.ait.lienzo.client.core.animation.AnimationTweener;
+import com.ait.lienzo.client.core.animation.IAnimation;
+import com.ait.lienzo.client.core.animation.IAnimationHandle;
 import com.ait.lienzo.client.core.event.NodeMouseClickEvent;
 import com.ait.lienzo.client.core.event.NodeMouseClickHandler;
 import com.ait.lienzo.client.core.image.PictureLoadedHandler;
@@ -52,9 +54,15 @@ public class ToolboxButton {
 
     public void hide() {
         if (this.picture != null) {
-            picture.removeFromParent();
-            toolbox.getLayer().batch();
-            this.picture = null;
+            picture.animate(AnimationTweener.LINEAR, AnimationProperties.toPropertyList(AnimationProperty.Properties.ALPHA(0)), 500, new AnimationCallback() {
+                @Override
+                public void onClose(IAnimation animation, IAnimationHandle handle) {
+                    picture.removeFromParent();
+                    toolbox.getLayer().batch();
+                    ToolboxButton.this.picture = null;
+                }
+            });
+
         }
     }
 }
