@@ -84,6 +84,9 @@ public class WiresTests extends FlowPanel
         WiresShape wiresShape2 = wires_manager.createShape(new MultiPath().rect(0, 0, 300, 200).setStrokeColor("#0000CC")).setX(50).setY(100).setDraggable(true);
         wiresShape2.getContainer().setUserData("B");
 
+        WiresShape wiresShape4 = wires_manager.createShape(new MultiPath().rect(20, 20, 400, 400).setStrokeColor("#CC00CC")).setX(50).setY(100).setDraggable(true);
+        wiresShape4.getContainer().setUserData("C");
+
         // bolt
         String svg = "M 0 100 L 65 115 L 65 105 L 120 125 L 120 115 L 200 180 L 140 160 L 140 170 L 85 150 L 85 160 L 0 140 Z";
         WiresShape wiresShape3 = wires_manager.createShape(new MultiPath(svg).setStrokeColor("#0000CC")).setX(50).setY(300).setDraggable(true);
