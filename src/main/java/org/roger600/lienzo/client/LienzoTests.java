@@ -13,6 +13,8 @@ public class LienzoTests implements EntryPoint {
     private FlowPanel mainPanel = new FlowPanel();
     private LienzoPanel panel = new LienzoPanel(1200, 680);
     private Layer layer = new Layer();
+
+    private Layer pickerLayer = new Layer();
     
     public void onModuleLoad()
     {
@@ -26,7 +28,7 @@ public class LienzoTests implements EntryPoint {
     }
     
     private void drawIt() {
-        WiresTests wiresTests = new WiresTests(layer);
+        WiresTests wiresTests = new WiresTests(layer, pickerLayer);
         wiresTests.testWires();
     }
     
